@@ -10,10 +10,9 @@ import (
 )
 
 func main() {
-
 	file, err := os.ReadFile("output.json")
 	if err != nil {
-			log.Fatalf("❌ Erro ao ler o JSON: %v", err)
+		log.Fatalf("❌ Erro ao ler o JSON: %v", err)
 	}
 
 	var partialConfig struct {
@@ -21,64 +20,68 @@ func main() {
 	}
 	
 	if err := json.Unmarshal(file, &partialConfig); err != nil {
-			log.Fatalf("❌ Erro ao fazer unmarshal do JSON: %v", err)
+		log.Fatalf("❌ Erro ao fazer unmarshal do JSON: %v", err)
 	}
 
-	for _, channels := range partialConfig.Channel {
-		fmt.Printf("🔧 Enroll admin user %s...\n", channels.CaNameTls)
+	for _, channel := range partialConfig.Channel {
+		fmt.Printf("🔧 Fazendo enroll TLS para %s -> %s...\n", channel.Name, channel.FileOutputTls)
+		
 		cmd := exec.Command("kubectl", "hlf", "ca", "enroll",
-				"--name=" + channels.Name,
-				"--namespace=" + channels.Namespace,
-				"--user=" + channels.UserAdmin,
-				"--secret=" + channels.Secretadmin,
-				"--mspid=" + channels.MspID,
-				"--ca-name=" + channels.CaNameTls,
-				"--output="+ channels.FileOutput,		
+			"--name="+channel.Name,
+			"--namespace="+channel.Namespace,
+			"--user="+channel.UserAdmin,
+			"--secret="+channel.Secretadmin,
+			"--mspid="+channel.MspID,
+			"--ca-name="+channel.CaNameTls,
+			"--output="+channel.FileOutputTls,
 		)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
 		if err := cmd.Run(); err != nil {
-				if exitErr, ok := err.(*exec.ExitError); ok {
-						exitCode := exitErr.ExitCode()
-						fmt.Printf("⚠️ Comando retornou código de saída %d\n", exitCode)
-						continue
-					if exitCode == 74 {
-						fmt.Printf("⚠️ Identidade %s já foi feito enroll, continuando...\n", channels.UserAdmin)
-						continue
-					}
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				exitCode := exitErr.ExitCode()
+				if exitCode == 74 {
+					fmt.Printf("⚠️ Identidade TLS %s já foi feito enroll, continuando...\n", channel.UserAdmin)
+					continue
 				}
-			fmt.Printf("❌ Erro ao fazer enroll do usuário %s: %v\n", channels.Name, err)
-			os.Exit(1)
+				fmt.Printf("⚠️ Comando TLS retornou código de saída %d\n", exitCode)
+			}
+			fmt.Printf("❌ Erro ao fazer enroll TLS do usuário %s: %v\n", channel.Name, err)
+			continue
 		}
+		fmt.Printf("✅ Enroll TLS concluído para %s -> %s\n", channel.Name, channel.FileOutputTls)
 	}
 
-	for _, channels := range partialConfig.Channel {
-		fmt.Printf("🔧 Enroll admin user %s...\n", channels.CaNameTls)
+	for _, channel := range partialConfig.Channel {
+		fmt.Printf("🔧 Fazendo enroll CA (signing) para %s -> %s...\n", channel.Name, channel.FileOutput)
+		
 		cmd := exec.Command("kubectl", "hlf", "ca", "enroll",
-				"--name=" + channels.Name,
-				"--namespace=" + channels.Namespace,
-				"--user=" + channels.UserAdmin,
-				"--secret=" + channels.Secretadmin,
-				"--mspid=" + channels.MspID,
-				"--ca-name=" + channels.CaNameTls,
-				"--output="+ channels.FileOutputTls,		
+			"--name="+channel.Name,
+			"--namespace="+channel.Namespace,
+			"--user="+channel.UserAdmin,
+			"--secret="+channel.Secretadmin,
+			"--mspid="+channel.MspID,
+			"--ca-name="+channel.CaName,
+			"--output="+channel.FileOutput,
 		)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
 		if err := cmd.Run(); err != nil {
-				if exitErr, ok := err.(*exec.ExitError); ok {
-						exitCode := exitErr.ExitCode()
-						fmt.Printf("⚠️ Comando retornou código de saída %d\n", exitCode)
-						continue
-					if exitCode == 74 {
-						fmt.Printf("⚠️ Identidade %s já foi feito enroll, continuando...\n", channels.UserAdmin)
-						continue
-					}
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				exitCode := exitErr.ExitCode()
+				if exitCode == 74 {
+					fmt.Printf("⚠️ Identidade CA %s já foi feito enroll, continuando...\n", channel.UserAdmin)
+					continue
 				}
-			fmt.Printf("❌ Erro ao fazer enroll do usuário %s: %v\n", channels.Name, err)
-			os.Exit(1)
+				fmt.Printf("⚠️ Comando CA retornou código de saída %d\n", exitCode)
+			}
+			fmt.Printf("❌ Erro ao fazer enroll CA do usuário %s: %v\n", channel.Name, err)
+			continue
 		}
+		fmt.Printf("✅ Enroll CA concluído para %s -> %s\n", channel.Name, channel.FileOutput)
 	}
+
+	fmt.Println("🎉 Processo de enroll concluído!")
 }

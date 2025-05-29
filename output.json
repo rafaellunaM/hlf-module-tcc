@@ -79,8 +79,8 @@
       "namespace": "default",
       "caNameTls": "tlsca",
       "caName": "ca",
-      "fileOutput": "orderermsp.yaml",
-      "fileOutputTls": "orderermspsign.yaml"
+      "fileOutput": "orderermspsign.yaml",
+      "fileOutputTls": "orderermsp.yaml"
     },
     {
       "name": "org1-ca",

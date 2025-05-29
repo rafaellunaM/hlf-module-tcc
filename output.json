@@ -3,7 +3,7 @@
     "ca-org1",
     "ca-ord"
   ],
-  "CAs": [
+  "CA": [
     {
       "capacity": "1Gi",
       "name": "org1-ca",
@@ -47,7 +47,7 @@
       "userType": "peer"
     }
   ],
-  "Orderes": [
+  "Orderer": [
     {
       "CAName": "ord-ca",
       "user": "orderer",
@@ -67,7 +67,7 @@
       "admin-hosts": "admin-orderer0-ord.localho.st"
     }
   ],
-  "Channels": [
+  "Channel": [
     {
       "name": "ord-ca",
       "userAdmin": "admin",

@@ -6,7 +6,7 @@ import (
     "log"
     "os"
     "os/exec"
-    "./internal/fabric"
+    "hlf/internal/fabric"
 )
 
 func main() {

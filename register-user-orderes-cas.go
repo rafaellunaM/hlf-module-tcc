@@ -6,22 +6,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"./internal/fabric"
 )
-
-type OrdererConfig struct {
-	CAName   string `json:"CAName"`
-	EnrollID string `json:"enrollID"`
-	EnrollPW string `json:"enrollPW"`
-	User     string `json:"user"`
-	Secret   string `json:"secret"`
-	UserType string `json:"userType"`
-	MSPID    string `json:"mspid"`
-	CaURL		 string `json:"caURL"`
-}
-
-type FullResources struct {
-	Orderes []OrdererConfig `json:"Orderes"`
-}
 
 func main() {
 	data, err := os.ReadFile("output.json")
@@ -29,8 +15,11 @@ func main() {
 		log.Fatalf("❌ não consegui ler output.json: %v", err)
 	}
 
-	var cfg FullResources
-	if err := json.Unmarshal(data, &cfg); err != nil {
+	var partialConfig struct {
+		Orderer []fabric.Orderer `json:"Orderer"`
+	}
+
+	if err := json.Unmarshal(data, &partialConfig); err != nil {
 		log.Fatalf("❌ não consegui parsear JSON: %v", err)
 	}
 
@@ -44,20 +33,20 @@ func main() {
 		}
 	}
 
-	for _, p := range cfg.Orderes {
-		fmt.Printf("🔐 Registrando Orderes `%s` na CA `%s`…\n", p.User, p.CAName)
+	for _, orderer := range partialConfig.Orderer {
+		fmt.Printf("🔐 Registrando Orderer `%s` na CA `%s`…\n", orderer.User, orderer.CAName)
 		args := []string{
 			"hlf", "ca", "register",
-			"--name=" + p.CAName,
-			"--user=" + p.User,
-			"--secret=" + p.Secret,
-			"--type=" + p.UserType,
-			"--enroll-id=" + p.EnrollID,
-			"--enroll-secret=" + p.EnrollPW,
-			"--mspid=" + p.MSPID,
-			"--ca-url=" + p.CaURL,
+			"--name=" + orderer.CAName,
+			"--user=" + orderer.User,
+			"--secret=" + orderer.Secret,
+			"--type=" + orderer.UserType,
+			"--enroll-id=" + orderer.EnrollID,
+			"--enroll-secret=" + orderer.EnrollPW,
+			"--mspid=" + orderer.Mspid,
+			"--ca-url=" + orderer.CaURL,
 		}
 		run(args...)
-		fmt.Printf("✅ Ordere `%s` registrado.\n\n", p.User)
+		fmt.Printf("✅ Orderer `%s` registrado.\n\n", orderer.User)
 	}
 }

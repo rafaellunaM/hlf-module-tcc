@@ -6,23 +6,8 @@ import (
     "log"
     "os"
     "os/exec"
+    "./internal/fabric"
 )
-
-type OrdererConfig struct {
-    EnrollIDorderer    string `json:"enrollIDorderer"`
-    EnrollPWorderer    string `json:"enrollPWorderer"`
-    MSPID       string `json:"mspid"`
-    Capacity    string `json:"capacity"`
-    Name        string `json:"name"`
-    Hosts       string `json:"hosts"`
-    IstioPort   string `json:"istioPort"`
-    AdminHosts  string `json:"admin-hosts"`
-    CAName      string `json:"CAName"`
-}
-
-type FullResources struct {
-    Orderers []OrdererConfig `json:"Orderes"`
-}
 
 func main() {
     ordererImage := os.Getenv("ORDERER_IMAGE")
@@ -45,8 +30,11 @@ func main() {
         log.Fatalf("❌ não consegui ler output.json: %v", err)
     }
 
-    var cfg FullResources
-    if err := json.Unmarshal(data, &cfg); err != nil {
+    var partialConfig struct {
+		Orderer []fabric.Orderer `json:"Orderer"`
+	}
+	
+    if err := json.Unmarshal(data, &partialConfig); err != nil {
         log.Fatalf("❌ erro ao parsear JSON: %v", err)
     }
 
@@ -60,7 +48,7 @@ func main() {
         }
     }
 
-    for _, o := range cfg.Orderers {
+    for _, o := range partialConfig.Orderer {
         fmt.Printf("🚀 Criando o orderer `%s`…\n", o.Name)
         args := []string{
             "hlf", "ordnode", "create",
@@ -69,7 +57,7 @@ func main() {
             "--storage-class=" + storageClass,
             "--enroll-id=" + o.EnrollIDorderer,
             "--enroll-pw=" + o.EnrollPWorderer,
-            "--mspid=" + o.MSPID,
+            "--mspid=" + o.Mspid,
             "--capacity=" + o.Capacity,
             "--name=" + o.Name,
             "--ca-name=" + o.CAName + ".default",

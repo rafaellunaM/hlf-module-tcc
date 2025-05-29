@@ -6,21 +6,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"./internal/fabric"
 )
-
-type PeerConfig struct {
-	CAName   string `json:"CAName"`
-	EnrollID string `json:"enrollID"`
-	EnrollPW string `json:"enrollPW"`
-	User     string `json:"user"`
-	Secret   string `json:"secret"`
-	UserType string `json:"userType"`
-	MSPID    string `json:"mspid"`
-}
-
-type FullResources struct {
-	Peers []PeerConfig `json:"Peers"`
-}
 
 func main() {
 	data, err := os.ReadFile("output.json")
@@ -28,8 +15,11 @@ func main() {
 		log.Fatalf("❌ não consegui ler output.json: %v", err)
 	}
 
-	var cfg FullResources
-	if err := json.Unmarshal(data, &cfg); err != nil {
+	var partialConfig struct {
+		Peers []fabric.Peer `json:"Peers"`
+	}
+	
+	if err := json.Unmarshal(data, &partialConfig); err != nil {
 		log.Fatalf("❌ não consegui parsear JSON: %v", err)
 	}
 
@@ -43,19 +33,19 @@ func main() {
 		}
 	}
 
-	for _, p := range cfg.Peers {
-		fmt.Printf("🔐 Registrando peer `%s` na CA `%s`…\n", p.User, p.CAName)
+	for _, peer := range partialConfig.Peers {
+		fmt.Printf("🔐 Registrando peer `%s` na CA `%s`…\n", peer.User, peer.CAName)
 		args := []string{
 			"hlf", "ca", "register",
-			"--name=" + p.CAName,
-			"--user=" + p.User,
-			"--secret=" + p.Secret,
-			"--type=" + p.UserType,
-			"--enroll-id=" + p.EnrollID,
-			"--enroll-secret=" + p.EnrollPW,
-			"--mspid=" + p.MSPID,
+			"--name=" + peer.CAName,
+			"--user=" + peer.User,
+			"--secret=" + peer.Secret,
+			"--type=" + peer.UserType,
+			"--enroll-id=" + peer.EnrollId,
+			"--enroll-secret=" + peer.EnrollPw,
+			"--mspid=" + peer.Mspid,
 		}
 		run(args...)
-		fmt.Printf("✅ Peer `%s` registrado.\n\n", p.User)
+		fmt.Printf("✅ Peer `%s` registrado.\n\n", peer.User)
 	}
 }

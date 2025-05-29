@@ -4,7 +4,7 @@ type CA struct {
 	Capacity   string `json:"capacity"`
 	Name       string `json:"name"`
 	EnrollId   string `json:"enrollId"`
-	EnrollPw   string `json:"enrollPw"`
+	EnrollPw   string `json:"enrollpw"`
 	Hosts      string `json:"hosts"`
 	IstioPort  string `json:"istioPort"`
 	User       string `json:"user"`

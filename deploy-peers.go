@@ -6,23 +6,8 @@ import (
     "log"
     "os"
     "os/exec"
+    "./internal/fabric"
 )
-
-type PeerConfig struct {
-    EnrollIDpeer    string `json:"enrollIDpeer"`
-    EnrollIPWpeer	string `json:"enrollIPWpeer"`
-    StateDB			string `json:"stateDB"`
-    Capacity    string `json:"capacity"`
-    MSPID		    string `json:"mspid"`
-    Name        string `json:"name"`
-    CAName				string `json:"CAName"`
-    Hosts       string `json:"hosts"`
-    IstioPort   string `json:"istioPort"`    
-}
-
-type FullResources struct {
-    Peers []PeerConfig `json:"Peers"`
-}
 
 func main() {
     peerImage := os.Getenv("PEER_IMAGE")
@@ -45,8 +30,11 @@ func main() {
         log.Fatalf("❌ não consegui ler output.json: %v", err)
     }
 
-    var cfg FullResources
-    if err := json.Unmarshal(data, &cfg); err != nil {
+    var partialConfig struct {
+		Peers []fabric.Peer `json:"Peers"`
+	}
+	
+    if err := json.Unmarshal(data, &partialConfig); err != nil {
         log.Fatalf("❌ não consegui parsear JSON: %v", err)
     }
 
@@ -60,14 +48,14 @@ func main() {
         }
     }
 
-    for _, p := range cfg.Peers {
+    for _, p := range partialConfig.Peers {
         fmt.Printf("🚀 Fazendo deploy do peer `%s`…\n", p.Name)
         args := []string{
             "hlf", "peer", "create",
             "--statedb=" + p.StateDB, 
             "--enroll-id=" + p.EnrollIDpeer,
             "--enroll-pw=" + p.EnrollIPWpeer,
-            "--mspid=" + p.MSPID,
+            "--mspid=" + p.Mspid,
             "--name=" + p.Name,
             "--ca-name=" + p.CAName + ".default",
             "--hosts=" + p.Hosts,

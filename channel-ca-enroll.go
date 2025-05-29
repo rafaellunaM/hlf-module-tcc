@@ -6,26 +6,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"./internal/fabric"
 )
-
-type Channels struct {
-	Name       		string `json:"name"`
-	UserAdmin 		string `json:"userAdmin"`
-	Secretadmin 	string `json:"secretadmin"`
-	Type 			 		string `json:"userType"`
-	EnrollID   		string `json:"enrollId"`
-	EnrollPW   		string `json:"enrollPw"`
-	MPSID      		string `json:"hosts"`
-	Namespace			string `json:"namespace"`
-	CaNameTls			string `json:"caNameTls"`
-	CaName				string `json:"caName"`
-	FileOutput		string `json:"fileOutput"`
-	FileOutputTls string `json:"fileOutputTls"`
-}
-
-type FullResources struct {
-	Channels []Channels `json:"Channels"`
-}
 
 func main() {
 
@@ -34,12 +16,15 @@ func main() {
 			log.Fatalf("❌ Erro ao ler o JSON: %v", err)
 	}
 
-	var config FullResources
-	if err := json.Unmarshal(file, &config); err != nil {
+	var partialConfig struct {
+		Channel []fabric.Channel `json:"Channel"`
+	}
+	
+	if err := json.Unmarshal(file, &partialConfig); err != nil {
 			log.Fatalf("❌ Erro ao fazer unmarshal do JSON: %v", err)
 	}
 
-	for _, channels := range config.Channels {
+	for _, channels := range partialConfig.Channel {
 		fmt.Printf("🔧 Enroll admin user %s...\n", channels.CaNameTls)
 		cmd := exec.Command("kubectl", "hlf", "ca", "enroll",
 				"--name=" + channels.Name,

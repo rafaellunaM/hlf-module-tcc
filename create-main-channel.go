@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"hlf"
+	"./internal/fabric"
 )
 
 func getIndentedCert(resourceType, resourceName, jsonPath string) (string, error) {

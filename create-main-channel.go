@@ -23,10 +23,10 @@ func getIndentedCert(resourceType, resourceName, jsonPath string) (string, error
 	return strings.Join(lines, "\n"), nil
 }
 
-func buildPeerOrganizationsYAML(peers []Peer, cas []CA) string {
+func buildPeerOrganizationsYAML(peers []fabric.Peer, cas []fabric.CA) string {
 	var result strings.Builder
 
-	mspToPeer := make(map[string]Peer)
+	mspToPeer := make(map[string]fabric.Peer)
 	for _, peer := range peers {
 		mspToPeer[peer.Mspid] = peer
 	}
@@ -49,7 +49,7 @@ func buildPeerOrganizationsYAML(peers []Peer, cas []CA) string {
 	return result.String()
 }
 
-func buildIdentitiesYAML(channels []Channel) string {
+func buildIdentitiesYAML(channels []fabric.Channel) string {
 	var result strings.Builder
 	
 	for _, ch := range channels {
@@ -75,15 +75,15 @@ func buildIdentitiesYAML(channels []Channel) string {
 	return result.String()
 }
 
-func buildOrdererOrganizationsYAML(orderers []Orderer, cas []CA) string {
+func buildOrdererOrganizationsYAML(orderers []fabric.Orderer, cas []fabric.CA) string {
 	var result strings.Builder
 
-	mspToOrderer := make(map[string][]Orderer)
+	mspToOrderers := make(map[string][]fabric.Orderer)
 	for _, orderer := range orderers {
-		mspToOrderer[orderer.Mspid] = append(mspToOrderer[orderer.Mspid], orderer)
+		mspToOrderers[orderer.Mspid] = append(mspToOrderers[orderer.Mspid], orderer)
 	}
 	
-	for mspID, ordererList := range mspToOrderer {
+	for mspID, ordererList := range mspToOrderers {
 		var caName string
 		for _, ca := range cas {
 			if ca.MspID == mspID {
@@ -96,6 +96,7 @@ func buildOrdererOrganizationsYAML(orderers []Orderer, cas []CA) string {
       caNamespace: "default"
       externalOrderersToJoin:
 `, caName))
+		
 		for _, orderer := range ordererList {
 			result.WriteString(fmt.Sprintf(`        - host: %s.default
           port: 7053
@@ -105,6 +106,7 @@ func buildOrdererOrganizationsYAML(orderers []Orderer, cas []CA) string {
 		result.WriteString(fmt.Sprintf(`      mspID: %s
       ordererEndpoints:
 `, mspID))
+
 		for _, orderer := range ordererList {
 			result.WriteString(fmt.Sprintf(`        - %s:443
 `, orderer.Hosts))
@@ -117,7 +119,7 @@ func buildOrdererOrganizationsYAML(orderers []Orderer, cas []CA) string {
 	return result.String()
 }
 
-func buildOrderersYAML(orderers []Orderer, tlsCerts []string) string {
+func buildOrderersYAML(orderers []fabric.Orderer, tlsCerts []string) string {
 	var result strings.Builder
 	
 	for i, orderer := range orderers {
@@ -131,7 +133,7 @@ func buildOrderersYAML(orderers []Orderer, tlsCerts []string) string {
 	return result.String()
 }
 
-func buildAdminOrgsYAML(channels []Channel, orgType string) string {
+func buildAdminOrgsYAML(channels []fabric.Channel, orgType string) string {
 	var result strings.Builder
 	seenMSPs := make(map[string]bool)
 	
@@ -161,9 +163,41 @@ func main() {
 		os.Exit(1)
 	}
 
+	var jsonStructure map[string]interface{}
+	if err := json.Unmarshal(raw, &jsonStructure); err != nil {
+		fmt.Fprintf(os.Stderr, "❌ Erro no unmarshal para debug: %v\n", err)
+		os.Exit(1)
+	}
+	
+	fmt.Printf("🔍 Debug - Estrutura do JSON:\n")
+	for key, value := range jsonStructure {
+		switch v := value.(type) {
+		case []interface{}:
+			fmt.Printf("  %s: array com %d elementos\n", key, len(v))
+		case interface{}:
+			fmt.Printf("  %s: %T\n", key, v)
+		}
+	}
+	
 	var config fabric.Config
 	if err := json.Unmarshal(raw, &config); err != nil {
 		fmt.Fprintf(os.Stderr, "❌ Erro no unmarshal: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("🔍 Debug - Dados carregados:\n")
+	fmt.Printf("  CAs: %d\n", len(config.CAs))
+	fmt.Printf("  Peers: %d\n", len(config.Peers))
+	fmt.Printf("  Orderers: %d\n", len(config.Orderers))
+	fmt.Printf("  Channels: %d\n", len(config.Channels))
+
+	if len(config.Channels) == 0 {
+		fmt.Fprintf(os.Stderr, "❌ Erro: Nenhum canal encontrado no arquivo de configuração\n")
+		os.Exit(1)
+	}
+
+	if len(config.Orderers) == 0 {
+		fmt.Fprintf(os.Stderr, "❌ Erro: Nenhum orderer encontrado no arquivo de configuração\n")
 		os.Exit(1)
 	}
 
@@ -192,8 +226,45 @@ func main() {
 	}
 	
 	if hasErrors {
-		os.Exit(1)
+		fmt.Println("⚠️  Continuando mesmo com erros nos certificados TLS...")
+		for i := range tlsCerts {
+			if errors[i] != nil {
+				tlsCerts[i] = "        # Certificado não encontrado"
+			}
+		}
 	}
+
+	adminOrdererOrgs := buildAdminOrgsYAML(config.Channels, "orderer")
+	adminPeerOrgs := buildAdminOrgsYAML(config.Channels, "peer")
+	peerOrgs := buildPeerOrganizationsYAML(config.Peers, config.CAs)
+	identities := buildIdentitiesYAML(config.Channels)
+	ordererOrgs := buildOrdererOrganizationsYAML(config.Orderers, config.CAs)
+	orderers := buildOrderersYAML(config.Orderers, tlsCerts)
+
+	fmt.Printf("🔍 Debug - Conteúdo gerado:\n")
+	fmt.Printf("  adminOrdererOrgs vazio: %t\n", strings.TrimSpace(adminOrdererOrgs) == "")
+	fmt.Printf("  adminPeerOrgs vazio: %t\n", strings.TrimSpace(adminPeerOrgs) == "")
+	fmt.Printf("  peerOrgs vazio: %t\n", strings.TrimSpace(peerOrgs) == "")
+	fmt.Printf("  identities vazio: %t\n", strings.TrimSpace(identities) == "")
+	fmt.Printf("  ordererOrgs vazio: %t\n", strings.TrimSpace(ordererOrgs) == "")
+	fmt.Printf("  orderers vazio: %t\n", strings.TrimSpace(orderers) == "")
+
+	if strings.TrimSpace(adminOrdererOrgs) == "" {
+		fmt.Fprintf(os.Stderr, "❌ Erro: adminOrdererOrganizations está vazio. Verificar se existe canal com MspID 'OrdererMSP'\n")
+	}
+	if strings.TrimSpace(adminPeerOrgs) == "" {
+		fmt.Fprintf(os.Stderr, "❌ Erro: adminPeerOrganizations está vazio. Verificar se existem canais com MspID diferente de 'OrdererMSP'\n")
+	}
+	if strings.TrimSpace(identities) == "" {
+		fmt.Fprintf(os.Stderr, "❌ Erro: identities está vazio. Verificar dados dos canais\n")
+	}
+	if strings.TrimSpace(ordererOrgs) == "" {
+		fmt.Fprintf(os.Stderr, "❌ Erro: ordererOrganizations está vazio. Verificar se orderers têm Mspid correspondente aos CAs\n")
+	}
+	if strings.TrimSpace(orderers) == "" {
+		fmt.Fprintf(os.Stderr, "❌ Erro: orderers está vazio. Verificar dados dos orderers\n")
+	}
+
 	yaml := fmt.Sprintf(`apiVersion: hlf.kungfusoftware.es/v1alpha1
 kind: FabricMainChannel
 metadata:
@@ -239,12 +310,17 @@ spec:
 %s`,
 		channelName,
 		channelName,
-		buildAdminOrgsYAML(config.Channels, "orderer"),
-		buildAdminOrgsYAML(config.Channels, "peer"),
-		buildPeerOrganizationsYAML(config.Peers, config.CAs),
-		buildIdentitiesYAML(config.Channels),
-		buildOrdererOrganizationsYAML(config.Orderers, config.CAs),
-		buildOrderersYAML(config.Orderers, tlsCerts))
+		adminOrdererOrgs,
+		adminPeerOrgs,
+		peerOrgs,
+		identities,
+		ordererOrgs,
+		orderers)
+
+	fmt.Println("\n🔍 YAML gerado:")
+	fmt.Println("================")
+	fmt.Println(yaml)
+	fmt.Println("================\n")
 
 	fmt.Printf("📤 Aplicando recurso FabricMainChannel '%s'...\n", channelName)
 

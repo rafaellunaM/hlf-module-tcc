@@ -1,0 +1,100 @@
+{
+  "Orgs": [
+    "ca-org1",
+    "ca-ord"
+  ],
+  "CAs": [
+    {
+      "capacity": "1Gi",
+      "name": "org1-ca",
+      "enrollId": "enroll",
+      "enrollPw": "enrollpw",
+      "hosts": "org1-ca.localho.st",
+      "istioPort": "443",
+      "user": "peer",
+      "secret": "peerpw",
+      "userType": "peer",
+      "mspID": "Org1MSP"
+    },
+    {
+      "capacity": "1Gi",
+      "name": "ord-ca",
+      "enrollId": "enroll",
+      "enrollPw": "enrollpw",
+      "hosts": "ord-ca.localho.st",
+      "istioPort": "443",
+      "user": "orderer",
+      "secret": "ordererpw",
+      "userType": "orderer",
+      "mspID": "OrdererMSP"
+    }
+  ],
+  "Peers": [
+    {
+      "stateDB": "leveldb",
+      "enrollIDpeer": "peer",
+      "mspid": "Org1MSP",
+      "enrollIPWpeer": "peerpw",
+      "capacity": "5Gi",
+      "name": "org1-peer0",
+      "CAName": "org1-ca",
+      "hosts": "peer0-org1.localho.st",
+      "istioPort": "443",
+      "user": "peer",
+      "enrollId": "enroll",
+      "enrollPw": "enrollpw",
+      "secret": "peerpw",
+      "userType": "peer"
+    }
+  ],
+  "Orderes": [
+    {
+      "CAName": "ord-ca",
+      "user": "orderer",
+      "secret": "ordererpw",
+      "userType": "orderer",
+      "enrollID": "enroll",
+      "enrollPW": "enrollpw",
+      "mspid": "OrdererMSP",
+      "caURL": "https://ord-ca.localho.st:443",
+      "capacity": "2Gi",
+      "name": "ord-node1",
+      "istioPort": "443",
+      "enrollIDorderer": "orderer",
+      "enrollPWorderer": "ordererpw",
+      "ca-name-service": "ord-ca.default",
+      "hosts": "orderer0-ord.localho.st",
+      "admin-hosts": "admin-orderer0-ord.localho.st"
+    }
+  ],
+  "Channels": [
+    {
+      "name": "ord-ca",
+      "userAdmin": "admin",
+      "secretadmin": "adminpw",
+      "userType": "admin",
+      "enrollID": "enroll",
+      "enrollPW": "enrollpw",
+      "mspID": "OrdererMSP",
+      "namespace": "default",
+      "caNameTls": "tlsca",
+      "caName": "ca",
+      "fileOutput": "orderermsp.yaml",
+      "fileOutputTls": "orderermspsign.yaml"
+    },
+    {
+      "name": "org1-ca",
+      "userAdmin": "admin",
+      "secretadmin": "adminpw",
+      "userType": "admin",
+      "enrollID": "enroll",
+      "enrollPW": "enrollpw",
+      "mspID": "Org1MSP",
+      "namespace": "default",
+      "caNameTls": "tlsca",
+      "caName": "ca",
+      "fileOutput": "org1msp.yaml",
+      "fileOutputTls": "org1msp-tlsca.yaml"
+    }
+  ]
+}

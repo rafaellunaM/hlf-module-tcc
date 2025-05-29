@@ -7,36 +7,29 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"log"
+	"hlf/internal/fabric"
 )
 
-type SecretChannel struct {
-	FileOutput    string `json:"fileOutput"`
-	FileOutputTls string `json:"fileOutputTls"`
-	Namespace     string `json:"namespace"`
-}
-
-type FullResources struct {
-	Channels []SecretChannel `json:"Channels"`
-}
-
 func main() {
-	raw, err := os.ReadFile("output.json")
+	file, err := os.ReadFile("output.json")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Erro lendo output.json: %v\n", err)
-		os.Exit(1)
+			log.Fatalf("❌ Erro ao ler o JSON: %v", err)
 	}
 
-	var config FullResources
-	if err := json.Unmarshal(raw, &config); err != nil {
-		fmt.Fprintf(os.Stderr, "Erro no unmarshal: %v\n", err)
-		os.Exit(1)
+	var partialConfig struct {
+		Channel []fabric.Channel `json:"Channel"`
+	}
+	
+	if err := json.Unmarshal(file, &partialConfig); err != nil {
+			log.Fatalf("❌ Erro ao fazer unmarshal do JSON: %v", err)
 	}
 
 	pwd, _ := os.Getwd()
 	
 	foundFiles := make(map[string]string)
 
-	for _, ch := range config.Channels {
+	for _, ch := range partialConfig.Channel {
 		
 		for _, fname := range []string{ch.FileOutput, ch.FileOutputTls} {
 			if fname == "" {

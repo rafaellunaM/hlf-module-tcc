@@ -31,7 +31,7 @@ func main() {
 				"--namespace=" + channels.Namespace,
 				"--user=" + channels.UserAdmin,
 				"--secret=" + channels.Secretadmin,
-				"--mspid=" + channels.MPSID,
+				"--mspid=" + channels.MspID,
 				"--ca-name=" + channels.CaNameTls,
 				"--output="+ channels.FileOutput,		
 		)
@@ -53,14 +53,14 @@ func main() {
 		}
 	}
 
-	for _, channels := range config.Channels {
+	for _, channels := range partialConfig.Channel {
 		fmt.Printf("🔧 Enroll admin user %s...\n", channels.CaNameTls)
 		cmd := exec.Command("kubectl", "hlf", "ca", "enroll",
 				"--name=" + channels.Name,
 				"--namespace=" + channels.Namespace,
 				"--user=" + channels.UserAdmin,
 				"--secret=" + channels.Secretadmin,
-				"--mspid=" + channels.MPSID,
+				"--mspid=" + channels.MspID,
 				"--ca-name=" + channels.CaNameTls,
 				"--output="+ channels.FileOutputTls,		
 		)

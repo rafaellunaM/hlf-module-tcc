@@ -30,10 +30,10 @@ func main() {
 				"--name="+channels.Name,
 				"--user="+ channels.UserAdmin,
 				"--secret="+channels.Secretadmin,
-				"--type="+channels.Type,
+				"--type="+channels.UserType,
 				"--enroll-id="+channels.EnrollID,
 				"--enroll-secret="+channels.EnrollPW,
-				"--mspid="+channels.MPSID,
+				"--mspid="+channels.MspID,
 		)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr

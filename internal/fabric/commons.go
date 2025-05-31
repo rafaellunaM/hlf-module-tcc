@@ -65,7 +65,7 @@ type Channel struct {
 }
 
 type Config struct {
-	Orgs     []string  `json:"Orgs"`
+	Orgs     []string  `json:"OrgsPeer"`
 	CAs      []CA      `json:"CA"`
 	Peers    []Peer    `json:"Peers"`
 	Orderers []Orderer `json:"Orderer"`

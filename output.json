@@ -1,7 +1,6 @@
 {
-  "Orgs": [
-    "ca-org1",
-    "ca-ord"
+  "OrgsPeers": [
+    "Org1MSP"
   ],
   "CA": [
     {
@@ -79,6 +78,7 @@
       "namespace": "default",
       "caNameTls": "tlsca",
       "caName": "ca",
+      "hosts": "orderer0-ord.localho.st",
       "fileOutput": "orderermspsign.yaml",
       "fileOutputTls": "orderermsp.yaml"
     },

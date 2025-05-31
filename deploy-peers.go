@@ -25,9 +25,9 @@ func main() {
         log.Fatal("❌ variável de ambiente SC_NAME não definida")
     }
 
-    data, err := os.ReadFile("output.json")
+    data, err := os.ReadFile("hlf-config.json")
     if err != nil {
-        log.Fatalf("❌ não consegui ler output.json: %v", err)
+        log.Fatalf("❌ não consegui ler hlf-config.json: %v", err)
     }
 
     var partialConfig struct {

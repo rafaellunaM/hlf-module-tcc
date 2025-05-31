@@ -19,7 +19,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	file, err := os.ReadFile("output.json")
+	file, err := os.ReadFile("hlf-config.json")
 	if err != nil {
 		log.Fatalf("❌ Erro ao ler o JSON: %v", err)
 	}

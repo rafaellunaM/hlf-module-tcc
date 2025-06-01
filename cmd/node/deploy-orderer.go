@@ -1,55 +1,55 @@
-package main
+package node
 
 import (
     "encoding/json"
     "fmt"
-    "log"
     "os"
     "os/exec"
     "hlf/internal/fabric"
 )
 
-func main() {
+func DeployOrderers(configFile string) error {
     ordererImage := os.Getenv("ORDERER_IMAGE")
     if ordererImage == "" {
-        log.Fatal("❌ variável de ambiente ORDERER_IMAGE não definida")
+        return fmt.Errorf("variável de ambiente ORDERER_IMAGE não definida")
     }
 
     ordererVersion := os.Getenv("ORDERER_VERSION")
     if ordererVersion == "" {
-        log.Fatal("❌ variável de ambiente ORDERER_VERSION não definida")
+        return fmt.Errorf("variável de ambiente ORDERER_VERSION não definida")
     }
 
     storageClass := os.Getenv("SC_NAME")
     if storageClass == "" {
-        log.Fatal("❌ variável de ambiente SC_NAME não definida")
+        return fmt.Errorf("variável de ambiente SC_NAME não definida")
     }
 
-    data, err := os.ReadFile("hlf-config.json")
+    data, err := os.ReadFile(configFile)
     if err != nil {
-        log.Fatalf("❌ não consegui ler hlf-config.json: %v", err)
+        return fmt.Errorf("não consegui ler %s: %v", configFile, err)
     }
 
     var partialConfig struct {
-		Orderer []fabric.Orderer `json:"Orderer"`
-	}
-	
+        Orderer []fabric.Orderer `json:"Orderer"`
+    }
+    
     if err := json.Unmarshal(data, &partialConfig); err != nil {
-        log.Fatalf("❌ erro ao parsear JSON: %v", err)
+        return fmt.Errorf("erro ao parsear JSON: %v", err)
     }
 
-    run := func(args ...string) {
-        fmt.Printf("🔧 Executando: kubectl %v\n", args)
+    run := func(args ...string) error {
+        fmt.Printf("Executando: kubectl %v\n", args)
         cmd := exec.Command("kubectl", args...)
         cmd.Stdout = os.Stdout
         cmd.Stderr = os.Stderr
         if err := cmd.Run(); err != nil {
-            log.Fatalf("❌ erro ao executar %v: %v", args, err)
+            return fmt.Errorf("erro ao executar %v: %v", args, err)
         }
+        return nil
     }
 
     for _, o := range partialConfig.Orderer {
-        fmt.Printf("🚀 Criando o orderer `%s`…\n", o.Name)
+        fmt.Printf(" Criando o orderer `%s`…\n", o.Name)
         args := []string{
             "hlf", "ordnode", "create",
             "--image=" + ordererImage,
@@ -65,8 +65,11 @@ func main() {
             "--admin-hosts=" + o.AdminHosts,
             "--istio-port=" + o.IstioPort,
         }
-        run(args...)
-        fmt.Printf("✅ Orderer `%s` criado com sucesso.\n\n", o.Name)
+        
+        if err := run(args...); err != nil {
+            return err
+        }
+        fmt.Printf(" Orderer `%s` criado com sucesso.\n\n", o.Name)
     }
 
     fmt.Println("⏳ Aguardando todos os orderer nodes ficarem em estado Running...")
@@ -79,7 +82,9 @@ func main() {
     waitCmd.Stdout = os.Stdout
     waitCmd.Stderr = os.Stderr
     if err := waitCmd.Run(); err != nil {
-        log.Fatalf("❌ Erro ao aguardar orderers: %v", err)
+        return fmt.Errorf("erro ao aguardar orderers: %v", err)
     }
-    fmt.Println("✅ Todos os orderers estão em execução.")
+    fmt.Println(" Todos os orderers estão em execução.")
+    
+    return nil
 }

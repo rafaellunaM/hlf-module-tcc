@@ -1,18 +1,17 @@
-package main
+package ca
 
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"hlf/internal/fabric"
 )
 
-func main() {
-	file, err := os.ReadFile("hlf-config.json")
+func EnrollChannels(configFile string) error {
+	file, err := os.ReadFile(configFile)
 	if err != nil {
-		log.Fatalf("❌ Erro ao ler o JSON: %v", err)
+		return fmt.Errorf("erro ao ler o JSON: %v", err)
 	}
 
 	var partialConfig struct {
@@ -20,11 +19,11 @@ func main() {
 	}
 	
 	if err := json.Unmarshal(file, &partialConfig); err != nil {
-		log.Fatalf("❌ Erro ao fazer unmarshal do JSON: %v", err)
+		return fmt.Errorf("erro ao fazer unmarshal do JSON: %v", err)
 	}
 
 	for _, channel := range partialConfig.Channel {
-		fmt.Printf("🔧 Fazendo enroll TLS para %s -> %s...\n", channel.Name, channel.FileOutputTls)
+		fmt.Printf("Fazendo enroll TLS para %s -> %s...\n", channel.Name, channel.FileOutputTls)
 		
 		cmd := exec.Command("kubectl", "hlf", "ca", "enroll",
 			"--name="+channel.Name,
@@ -42,19 +41,19 @@ func main() {
 			if exitErr, ok := err.(*exec.ExitError); ok {
 				exitCode := exitErr.ExitCode()
 				if exitCode == 74 {
-					fmt.Printf("⚠️ Identidade TLS %s já foi feito enroll, continuando...\n", channel.UserAdmin)
+					fmt.Printf("Identidade TLS %s já foi feito enroll, continuando...\n", channel.UserAdmin)
 					continue
 				}
-				fmt.Printf("⚠️ Comando TLS retornou código de saída %d\n", exitCode)
+				fmt.Printf("Comando TLS retornou código de saída %d\n", exitCode)
 			}
-			fmt.Printf("❌ Erro ao fazer enroll TLS do usuário %s: %v\n", channel.Name, err)
+			fmt.Printf("Erro ao fazer enroll TLS do usuário %s: %v\n", channel.Name, err)
 			continue
 		}
-		fmt.Printf("✅ Enroll TLS concluído para %s -> %s\n", channel.Name, channel.FileOutputTls)
+		fmt.Printf(" Enroll TLS concluído para %s -> %s\n", channel.Name, channel.FileOutputTls)
 	}
 
 	for _, channel := range partialConfig.Channel {
-		fmt.Printf("🔧 Fazendo enroll CA (signing) para %s -> %s...\n", channel.Name, channel.FileOutput)
+		fmt.Printf("Fazendo enroll CA (signing) para %s -> %s...\n", channel.Name, channel.FileOutput)
 		
 		cmd := exec.Command("kubectl", "hlf", "ca", "enroll",
 			"--name="+channel.Name,
@@ -72,16 +71,17 @@ func main() {
 			if exitErr, ok := err.(*exec.ExitError); ok {
 				exitCode := exitErr.ExitCode()
 				if exitCode == 74 {
-					fmt.Printf("⚠️ Identidade CA %s já foi feito enroll, continuando...\n", channel.UserAdmin)
+					fmt.Printf("Identidade CA %s já foi feito enroll, continuando...\n", channel.UserAdmin)
 					continue
 				}
-				fmt.Printf("⚠️ Comando CA retornou código de saída %d\n", exitCode)
+				fmt.Printf("Comando CA retornou código de saída %d\n", exitCode)
 			}
-			fmt.Printf("❌ Erro ao fazer enroll CA do usuário %s: %v\n", channel.Name, err)
+			fmt.Printf("Erro ao fazer enroll CA do usuário %s: %v\n", channel.Name, err)
 			continue
 		}
-		fmt.Printf("✅ Enroll CA concluído para %s -> %s\n", channel.Name, channel.FileOutput)
+		fmt.Printf(" Enroll CA concluído para %s -> %s\n", channel.Name, channel.FileOutput)
 	}
 
-	fmt.Println("🎉 Processo de enroll concluído!")
+	fmt.Println("Processo de enroll concluído!")
+	return nil
 }

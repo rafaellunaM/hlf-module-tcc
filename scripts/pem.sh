@@ -1,3 +1,6 @@
+#!/bin/sh
+
+set -e
 cat orderermsp.yaml | grep -A 100 "pem: |" | sed 's/.*pem: |//' | sed '/^[[:space:]]*$/d' | sed 's/^[[:space:]]*//' > /tmp/orderer-cert.pem
 
 kubectl hlf channelcrd main create \

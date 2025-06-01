@@ -1,4 +1,4 @@
-package main
+package channels
 
 import (
 	"encoding/json"
@@ -15,7 +15,7 @@ func main() {
 
 	file, err := os.ReadFile("hlf-config.json")
 	if err != nil {
-		log.Fatalf("❌ Erro ao ler o JSON: %v", err)
+		log.Fatalf("Erro ao ler o JSON: %v", err)
 	}
 
 	var partialConfig struct {
@@ -23,7 +23,7 @@ func main() {
 	}
 
 	if err := json.Unmarshal(file, &partialConfig); err != nil {
-		log.Fatalf("❌ Erro ao fazer parse do JSON: %v", err)
+		log.Fatalf("Erro ao fazer parse do JSON: %v", err)
 	}
 
 	peerRegex, _ := regexp.Compile(`org(\d+)-[a-z]+`)
@@ -82,8 +82,8 @@ func main() {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		fmt.Printf("❌ Erro ao criar o channel: %v\n", err)
+		fmt.Printf("Erro ao criar o channel: %v\n", err)
 		os.Exit(1)
 	}
-	fmt.Printf("✅ channel demo criado com sucesso\n")
+	fmt.Printf("channel demo criado com sucesso\n")
 }

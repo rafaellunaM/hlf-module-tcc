@@ -14,5 +14,3 @@ kubectl hlf channelcrd main create \
   --secret-ns default \
   --consenters "orderer0-ord.localho.st:443" \
   --consenter-certificates /tmp/orderer-cert.pem
-
-  # --identities "Org1MSP-tls;org1msp-tlsca.yaml" \

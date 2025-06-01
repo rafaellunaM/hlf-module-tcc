@@ -62,6 +62,8 @@ type Channel struct {
 	CaName         string `json:"caName"`
 	FileOutput     string `json:"fileOutput"`
 	FileOutputTls  string `json:"fileOutputTls"`
+	OrderNodeHost		string `json:"orderNodeHost"`
+	OrdererNodeEndpoint 	string `json:"ordererNodeEndpoint"`
 }
 
 type Config struct {

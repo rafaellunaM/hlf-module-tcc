@@ -36,6 +36,7 @@ watch kubectl get fabricmainchannels
 watch kubectl get pods
 
 # delete
+rm -rf /tmp/*
 rm *.yaml
 kubectl delete fabricorderernodes.hlf.kungfusoftware.es --all-namespaces --all
 kubectl delete fabricpeers.hlf.kungfusoftware.es --all-namespaces --all
@@ -47,23 +48,23 @@ watch kubectl get pods
 
 # Enroll
 kubectl hlf ca enroll --name=ord-ca --namespace=default \
-    --user=admin --secret=adminpw --mspid OrdererMSP \
+    --user=admin --secret=adminpw --mspId OrdererMSP \
     --ca-name tlsca  --output orderermsp.yaml
     
 kubectl hlf ca enroll --name=ord-ca --namespace=default \
-    --user=admin --secret=adminpw --mspid OrdererMSP \
+    --user=admin --secret=adminpw --mspId OrdererMSP \
     --ca-name ca  --output orderermspsign.yaml
 
 kubectl hlf ca enroll --name=org1-ca --namespace=default \
-    --user=admin --secret=adminpw --mspid Org1MSP \
+    --user=admin --secret=adminpw --mspId Org1MSP \
     --ca-name tlsca  --output org1msp-tlsca.yaml
 kubectl hlf ca enroll --name=org1-ca --namespace=default \
-    --user=admin --secret=adminpw --mspid Org1MSP \
+    --user=admin --secret=adminpw --mspId Org1MSP \
     --ca-name ca  --output org1msp.yaml
 
 kubectl hlf identity create --name org1-admin --namespace default \
     --ca-name org1-ca --ca-namespace default \
-    --ca ca --mspid Org1MSP --enroll-id admin --enroll-secret adminpw
+    --ca ca --mspId Org1MSP --enroll-id admin --enroll-secret adminpw
 
 kubectl create secret generic wallet --namespace=default \
         --from-file=org1msp.yaml=$PWD/org1msp.yaml \

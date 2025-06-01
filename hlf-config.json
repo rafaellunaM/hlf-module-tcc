@@ -79,6 +79,8 @@
       "caNameTls": "tlsca",
       "caName": "ca",
       "hosts": "orderer0-ord.localho.st",
+      "orderNodeHost": "ord-node1.default",
+      "ordererNodeEndpoint": "orderer0-ord.localho.st",
       "fileOutput": "orderermspsign.yaml",
       "fileOutputTls": "orderermsp.yaml"
     },

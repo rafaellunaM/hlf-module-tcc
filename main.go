@@ -5,6 +5,7 @@ import (
 	"hlf/cmd/ca"  
 	"hlf/cmd/node"
 	"hlf/cmd/channels"
+	"hlf/cmd/scripts"
 )
 
 func main() {
@@ -39,6 +40,10 @@ func main() {
 
 	if err := ca.CreateWallet("hlf-config.json"); err != nil {
 		log.Fatalf("Erro ao criar wallet: %v", err)
+	}
+
+	if err := scripts.ExecutePemScript(); err != nil {
+			log.Fatalf("❌ Erro ao extrair certificado PEM: %v", err)
 	}
 
 	if err := channels.CreateMainChannel("hlf-config.json"); err != nil {

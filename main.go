@@ -43,7 +43,7 @@ func main() {
 	}
 
 	if err := scripts.ExecutePemScript(); err != nil {
-			log.Fatalf("❌ Erro ao extrair certificado PEM: %v", err)
+			log.Fatalf("Erro ao extrair certificado PEM: %v", err)
 	}
 
 	if err := channels.CreateMainChannel("hlf-config.json"); err != nil {

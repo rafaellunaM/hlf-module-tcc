@@ -7,15 +7,13 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
-	"log"
 	"hlf/internal/fabric"
 )
 
-func main() {
-
-	file, err := os.ReadFile("hlf-config.json")
+func CreateMainChannel(configFile string) error {
+	file, err := os.ReadFile(configFile)
 	if err != nil {
-		log.Fatalf("Erro ao ler o JSON: %v", err)
+		return fmt.Errorf("erro ao ler o JSON: %v", err)
 	}
 
 	var partialConfig struct {
@@ -23,7 +21,7 @@ func main() {
 	}
 
 	if err := json.Unmarshal(file, &partialConfig); err != nil {
-		log.Fatalf("Erro ao fazer parse do JSON: %v", err)
+		return fmt.Errorf("erro ao fazer parse do JSON: %v", err)
 	}
 
 	peerRegex, _ := regexp.Compile(`org(\d+)-[a-z]+`)
@@ -75,15 +73,16 @@ func main() {
 		}
 	}
 
-	fmt.Printf("Comando: %s\n", strings.Join(args, " "))
+	fmt.Printf("🔧 Comando: kubectl %s\n", strings.Join(args, " "))
 
 	cmd := exec.Command("kubectl", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		fmt.Printf("Erro ao criar o channel: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("erro ao criar o channel: %v", err)
 	}
-	fmt.Printf("channel demo criado com sucesso\n")
+	
+	fmt.Printf("Channel demo criado com sucesso\n")
+	return nil
 }

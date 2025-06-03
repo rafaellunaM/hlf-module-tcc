@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -20,7 +19,23 @@ type Step struct {
 	Function    func() error
 }
 
+func displayWelcomeBanner() {
+	banner := `
+ ██   ██ ██      ███████      █████  ██    ██ ████████  ██████  
+ ██   ██ ██      ██          ██   ██ ██    ██    ██    ██    ██ 
+ ███████ ██      █████       ███████ ██    ██    ██    ██    ██ 
+ ██   ██ ██      ██          ██   ██ ██    ██    ██    ██    ██ 
+ ██   ██ ███████ ██          ██   ██  ██████     ██     ██████  
+
+           Hyperledger Fabric Automated Deployment Tool
+               Version 1.0 - Created by Rafael Luna
+`
+	fmt.Println(banner)
+}
+
 func main() {
+	displayWelcomeBanner()
+	
 	configFile := "hlf-config.json"
 	
 	steps := []Step{

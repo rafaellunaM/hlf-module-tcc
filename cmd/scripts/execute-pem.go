@@ -9,9 +9,15 @@ import (
 func ExecutePemScript() error {
 	fmt.Printf("Extraindo certificado PEM do orderermsp.yaml...\n")
 
-	cmd := exec.Command("sh", "-c", 
-		"cat orderermsp.yaml | grep -A 100 'pem: |' | sed 's/.*pem: |//' | sed '/^[[:space:]]*$/d' | sed 's/^[[:space:]]*//' > /tmp/orderer-cert.pem")
-	cmd.Stdout = os.Stdout
+	cmd := exec.Command("kubectl", "get", "fabricorderernodes", "ord-node1", "-o=jsonpath={.status.tlsCert}")
+	
+	outFile, err := os.Create("/tmp/orderer-cert.pem")
+	if err != nil {
+		return fmt.Errorf("erro ao criar arquivo de saída: %v", err)
+	}
+	defer outFile.Close()
+
+	cmd.Stdout = outFile
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {

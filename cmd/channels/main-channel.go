@@ -73,7 +73,7 @@ func CreateMainChannel(configFile string) error {
 		}
 	}
 
-	fmt.Printf("🔧 Comando: kubectl %s\n", strings.Join(args, " "))
+	fmt.Printf("Comando: kubectl %s\n", strings.Join(args, " "))
 
 	cmd := exec.Command("kubectl", args...)
 	cmd.Stdout = os.Stdout

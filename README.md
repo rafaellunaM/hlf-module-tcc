@@ -12,16 +12,16 @@
 
 ### Depends on: https://github.com/rafaellunaM/IaC-tcc/blob/main/terraform/modules/deployments/code/hlf-config.json
 
-# secret
+# Secret
 kubectl delete secrets wallet && \
 go run create-generic-wallet.go 
 
-# consulta
+# Consulta
 kubectl get secrete |grep wallet
 watch kubectl get fabricmainchannels 
 watch kubectl get pods
 
-# delete
+# Delete
 rm -rf /tmp/*
 rm *.yaml
 kubectl delete fabricorderernodes.hlf.kungfusoftware.es --all-namespaces --all
@@ -45,6 +45,7 @@ kubectl hlf ca enroll --name=ord-ca --namespace=default \
 kubectl hlf ca enroll --name=org1-ca --namespace=default \
     --user=admin --secret=adminpw --mspid Org1MSP \
     --ca-name tlsca  --output org1msp-tlsca.yaml
+
 kubectl hlf ca enroll --name=org1-ca --namespace=default \
     --user=admin --secret=adminpw --mspid Org1MSP \
     --ca-name ca  --output org1msp.yaml

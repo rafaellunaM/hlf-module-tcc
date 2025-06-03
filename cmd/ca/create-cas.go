@@ -52,9 +52,9 @@ func CreateCAs(configFile string) error {
 		}
 		fmt.Printf(" CA %s criada com sucesso.\n", ca.Name)
 	}
-	fmt.Println("⏳ Aguardando todos os CAs nodes ficarem em estado Running...")
+	fmt.Println("Aguardando todos os CAs nodes ficarem em estado Running...")
 	waitCmd := exec.Command("kubectl", "wait",
-			"--timeout=60s",
+			"--timeout=180s",
 			"--for=condition=Running",
 			"fabriccas.hlf.kungfusoftware.es",
 			"--all",

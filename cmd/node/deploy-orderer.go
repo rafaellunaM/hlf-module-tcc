@@ -72,7 +72,7 @@ func DeployOrderers(configFile string) error {
         fmt.Printf(" Orderer `%s` criado com sucesso.\n\n", o.Name)
     }
 
-    fmt.Println("⏳ Aguardando todos os orderer nodes ficarem em estado Running...")
+    fmt.Println("Aguardando todos os orderer nodes ficarem em estado Running...")
     waitCmd := exec.Command("kubectl", "wait",
         "--timeout=180s",
         "--for=condition=Running",

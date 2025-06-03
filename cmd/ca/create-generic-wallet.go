@@ -63,7 +63,7 @@ func createSecret(files map[string]string) error {
 		args = append(args, fmt.Sprintf("--from-file=%s=%s", fileName, fullPath))
 	}
 
-	fmt.Printf("📋 Comando: kubectl %s\n", strings.Join(args, " "))
+	fmt.Printf("Comando: kubectl %s\n", strings.Join(args, " "))
 
 	cmd := exec.Command("kubectl", args...)
 	cmd.Stdout = os.Stdout

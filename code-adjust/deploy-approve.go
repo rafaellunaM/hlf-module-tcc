@@ -11,7 +11,7 @@ import (
 )
 
 func runCommand(name string, args ...string) error {
-	fmt.Printf("⏳ Executando: %s %v\n", name, args)
+	fmt.Printf(" Executando: %s %v\n", name, args)
 	cmd := exec.Command(name, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -19,7 +19,7 @@ func runCommand(name string, args ...string) error {
 }
 
 func runCommandOutput(name string, args ...string) (string, error) {
-	fmt.Printf("⏳ Executando: %s %v\n", name, args)
+	fmt.Printf(" Executando: %s %v\n", name, args)
 	cmd := exec.Command(name, args...)
 	var out bytes.Buffer
 	cmd.Stdout = &out
@@ -36,8 +36,8 @@ func getNextSequence(config, user, peer, channel string) (int, error) {
 		"--channel="+channel,
 	)
 	if err != nil {
-		fmt.Printf("❌ Erro ao consultar definição comprometida: %v\nOutput: %s\n", err, out)
-		return 1, nil // Assume 1 se nada estiver comprometido ainda
+		fmt.Printf(" Erro ao consultar definição comprometida: %v\nOutput: %s\n", err, out)
+		return 1, nil
 	}
 
 	re := regexp.MustCompile(`Sequence: (\d+)`)
@@ -50,7 +50,7 @@ func getNextSequence(config, user, peer, channel string) (int, error) {
 		return seq + 1, nil
 	}
 
-	return 1, nil // Nenhum encontrado
+	return 1, nil
 }
 
 func main() {
@@ -69,15 +69,15 @@ func main() {
 	mspID := "Org1MSP"
 	policy := "OR('Org1MSP.member')"
 
-	// 🔁 Descobrir próxima sequência
+
 	sequenceInt, err := getNextSequence(config, user, peer, channel)
 	if err != nil {
-		fmt.Printf("❌ Erro ao obter próxima sequência: %v\n", err)
+		fmt.Printf(" Erro ao obter próxima sequência: %v\n", err)
 		os.Exit(1)
 	}
 	sequence := fmt.Sprintf("%d", sequenceInt)
 
-	// ✅ 1. Approve chaincode
+
 	err = runCommand("kubectl", "hlf", "chaincode", "approveformyorg",
 		"--config="+config,
 		"--user="+user,
@@ -90,11 +90,10 @@ func main() {
 		"--channel="+channel,
 	)
 	if err != nil {
-		fmt.Printf("❌ Erro ao aprovar chaincode: %v\n", err)
+		fmt.Printf(" Erro ao aprovar chaincode: %v\n", err)
 		os.Exit(1)
 	}
 
-	// ✅ 2. Commit chaincode
 	err = runCommand("kubectl", "hlf", "chaincode", "commit",
 		"--config="+config,
 		"--user="+user,
@@ -106,11 +105,11 @@ func main() {
 		"--channel="+channel,
 	)
 	if err != nil {
-		fmt.Printf("❌ Erro ao commitar chaincode: %v\n", err)
+		fmt.Printf(" Erro ao commitar chaincode: %v\n", err)
 		os.Exit(1)
 	}
 
-	// ✅ 3. Invoke initLedger
+
 	err = runCommand("kubectl", "hlf", "chaincode", "invoke",
 		"--config="+config,
 		"--user="+user,
@@ -121,11 +120,10 @@ func main() {
 		"-a", "[]",
 	)
 	if err != nil {
-		fmt.Printf("❌ Erro ao invocar chaincode: %v\n", err)
+		fmt.Printf(" Erro ao invocar chaincode: %v\n", err)
 		os.Exit(1)
 	}
 
-	// ✅ 4. Query GetAllAssets
 	err = runCommand("kubectl", "hlf", "chaincode", "query",
 		"--config="+config,
 		"--user="+user,
@@ -136,9 +134,9 @@ func main() {
 		"-a", "[]",
 	)
 	if err != nil {
-		fmt.Printf("❌ Erro ao consultar chaincode: %v\n", err)
+		fmt.Printf(" Erro ao consultar chaincode: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Println("✅ Chaincode aprovado, commitado, invocado e consultado com sucesso.")
+	fmt.Println("Chaincode aprovado, commitado, invocado e consultado com sucesso.")
 }

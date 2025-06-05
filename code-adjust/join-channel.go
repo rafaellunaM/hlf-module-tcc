@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// getIndentedCert pega o certificado e adiciona 8 espaços no início de cada linha
+
 func getIndentedCert(resource, jsonPath string) (string, error) {
 	cmd := exec.Command("kubectl", "get", resource, "-o", "jsonpath="+jsonPath)
 	output, err := cmd.Output()
@@ -23,7 +23,7 @@ func getIndentedCert(resource, jsonPath string) (string, error) {
 }
 
 func main() {
-	// Parâmetros fixos (modifique conforme sua necessidade)
+
 	namespace := "default"
 	ordererNode := "ord-node1"
 	mspID := "Org1MSP"
@@ -37,11 +37,11 @@ func main() {
 
 	ordererTLS, err := getIndentedCert("fabricorderernodes/"+ordererNode, "{.status.tlsCert}")
 	if err != nil {
-		fmt.Printf("❌ Erro ao pegar TLS cert do orderer: %v\n", err)
+		fmt.Printf(" Erro ao pegar TLS cert do orderer: %v\n", err)
 		os.Exit(1)
 	}
 
-	// Monta o YAML com os dados coletados
+
 	yaml := fmt.Sprintf(`
 apiVersion: hlf.kungfusoftware.es/v1alpha1
 kind: FabricFollowerChannel
@@ -75,9 +75,9 @@ spec:
 	applyCmd.Stderr = os.Stderr
 
 	if err := applyCmd.Run(); err != nil {
-		fmt.Printf("❌ Erro ao aplicar FabricFollowerChannel: %v\n", err)
+		fmt.Printf(" Erro ao aplicar FabricFollowerChannel: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Println("✅ FabricFollowerChannel criado com sucesso.")
+	fmt.Println("FabricFollowerChannel criado com sucesso.")
 }

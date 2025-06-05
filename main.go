@@ -10,6 +10,7 @@ import (
 	"hlf/cmd/node"
 	"hlf/cmd/channels"
 	"hlf/cmd/scripts"
+	"hlf/cmd/administration"
 )
 
 type Step struct {
@@ -47,8 +48,9 @@ func main() {
 		{6, "Register Channels", "Registrar channels", func() error { return ca.RegisterChannels(configFile) }},
 		{7, "Enroll Channels", "Fazer enroll dos channels", func() error { return ca.EnrollChannels(configFile) }},
 		{8, "Create Wallet", "Criar wallet", func() error { return ca.CreateWallet(configFile) }},
-		{9, "Execute PEM Script", "Extrair certificado PEM", func() error { return scripts.ExecutePemScript() }},
+		{9, "Execute PEM Script", "Extrair certificado PEM", func() error { return scripts.ExecutePemScript(configFile) }},
 		{10, "Create Main Channel", "Criar canal principal", func() error { return channels.CreateMainChannel(configFile) }},
+		{11, "Delete todos os recursos", "Delete todos os recursos HLF e secret", func() error { return administration.DeleteAllResources() }},
 	}
 
 	scanner := bufio.NewScanner(os.Stdin)

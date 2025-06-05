@@ -31,6 +31,7 @@ func CreateMainChannel(configFile string) error {
 	var peerIdentities []string
 	var ordererConsenters []string
 	var ordererCerts []string
+	var consenterCertificates []string
 	var namespace = "default"
 
 	for _, channel := range partialConfig.Channel {
@@ -39,8 +40,12 @@ func CreateMainChannel(configFile string) error {
 			peerIdentities = append(peerIdentities, channel.MspID+";"+channel.FileOutput)
 		}
 		if ordRegex.MatchString(channel.Name) {
-			ordererConsenters = append(ordererConsenters, channel.OrdererNodeEndpoint+":443")
+			ordererConsenters = append(ordererConsenters, channel.OrdererNodeEndpoint...)
 			ordererCerts = append(ordererCerts, channel.FileOutput)
+			for _, ordererName := range channel.OrdererNodesList {
+				certPath := fmt.Sprintf("/tmp/%s-cert.pem", ordererName)
+				consenterCertificates = append(consenterCertificates, "--consenter-certificates", certPath)
+			}
 		}
 	}
 
@@ -50,21 +55,20 @@ func CreateMainChannel(configFile string) error {
 	args := []string{
 		"hlf", "channelcrd", "main", "create",
 		"--name", "demo",
-		"--channel-name", "demo", 
+		"--channel-name", "demo",
 		"--secret-name", "wallet",
 		"--admin-orderer-orgs", "OrdererMSP",
 		"--orderer-orgs", "OrdererMSP",
-		"--consenter-certificates", "/tmp/ord-node1-cert.pem",
-		"--consenter-certificates", "/tmp/ord-node2-cert.pem",
-		"--consenter-certificates", "/tmp/ord-node3-cert.pem",
-		"--consenter-certificates", "/tmp/ord-node4-cert.pem",
+	}
+	args = append(args, consenterCertificates...)
+	args = append(args,
 		"--identities", "OrdererMSP;orderermsp.yaml",
 		"--identities", "OrdererMSP-sign;orderermspsign.yaml",
 		"--admin-peer-orgs", strings.Join(peerOrgs, ","),
 		"--peer-orgs", strings.Join(peerOrgs, ","),
 		"--secret-ns", namespace,
 		"--consenters", strings.Join(ordererConsenters, ","),
-	}
+	)
 
 	for _, identity := range peerIdentities {
 		args = append(args, "--identities", identity)
@@ -85,7 +89,7 @@ func CreateMainChannel(configFile string) error {
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("erro ao criar o channel: %v", err)
 	}
-	
+
 	fmt.Printf("Channel demo criado com sucesso\n")
 	return nil
 }

@@ -63,7 +63,8 @@ type Channel struct {
 	FileOutput     string `json:"fileOutput"`
 	FileOutputTls  string `json:"fileOutputTls"`
 	OrderNodeHost		string `json:"orderNodeHost"`
-	OrdererNodeEndpoint 	string `json:"ordererNodeEndpoint"`
+	OrdererNodeEndpoint []string `json:"ordererNodeEndpoint"`
+	OrdererNodesList		[]string `json:"ordererNodesList"`
 }
 
 type Config struct {

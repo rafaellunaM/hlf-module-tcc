@@ -2,7 +2,6 @@ package administration
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 )
 
@@ -24,13 +23,13 @@ func DeleteAllResources() error {
 		var err error
 		
 		if resource != "secret/wallet" {
-				output, err = exec.Command("kubectl", "delete", resource, "--all", "--all-namespaces").CombinedOutput()
+			output, err = exec.Command("kubectl", "delete", resource, "--all", "--all-namespaces").CombinedOutput()
 		} else {
-				output, err = exec.Command("kubectl", "delete", "secret", "wallet", "--all-namespaces").CombinedOutput()
+			output, err = exec.Command("kubectl", "delete", "secret", "wallet", "-n", "default").CombinedOutput()
 		}
 		
 		if err != nil {
-				return fmt.Errorf("Erro ao deletar recurso %s: %v\nSaída: %s", resource, err, string(output))
+			return fmt.Errorf("Erro ao deletar recurso %s: %v\nSaída: %s", resource, err, string(output))
 		}
 
 		fmt.Printf("Recurso %s deletado com sucesso\n", resource)

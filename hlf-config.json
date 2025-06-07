@@ -1,7 +1,4 @@
 {
-  "OrgsPeers": [
-    "Org1MSP"
-  ],
   "CA": [
     {
       "capacity": "1Gi",
@@ -80,7 +77,8 @@
       "caName": "ca",
       "hosts": "orderer0-ord.localho.st",
       "orderNodeHost": "ord-node1.default",
-      "ordererNodeEndpoint": "orderer0-ord.localho.st",
+      "ordererNodesList": ["ord-node1"],
+      "ordererNodeEndpoint": ["orderer0-ord.localho.st:443"],
       "fileOutput": "orderermspsign.yaml",
       "fileOutputTls": "orderermsp.yaml"
     },

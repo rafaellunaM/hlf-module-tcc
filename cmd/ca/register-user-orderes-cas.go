@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"hlf/internal/fabric"
 )
 
@@ -22,14 +23,27 @@ func RegisterOrderers(configFile string) error {
 		return fmt.Errorf("não consegui parsear JSON: %v", err)
 	}
 
-	run := func(args ...string) error {
+	runWithErrorCheck := func(ordererUser string, args ...string) error {
 		fmt.Printf("Executando: kubectl %v\n", args) 
-		cmd := exec.Command("kubectl", args...)   
-		cmd.Stdout = os.Stdout                       
-		cmd.Stderr = os.Stderr                      
-		if err := cmd.Run(); err != nil {
+		cmd := exec.Command("kubectl", args...)
+		
+		// Captura stderr para verificar a mensagem de erro
+		output, err := cmd.CombinedOutput()
+		
+		if err != nil {
+			errorMsg := string(output)
+			// Verifica se o erro é sobre identidade já registrada
+			if strings.Contains(errorMsg, "is already registered") {
+				fmt.Printf("Orderer `%s` já está registrado, continuando...\n", ordererUser)
+				return nil
+			}
+			// Se for outro tipo de erro, retorna o erro
+			fmt.Fprintf(os.Stderr, "%s", output)
 			return fmt.Errorf("erro ao executar %v: %v", args, err)
 		}
+		
+		// Se não houve erro, mostra a saída normalmente
+		fmt.Print(string(output))
 		return nil
 	}
 
@@ -47,10 +61,10 @@ func RegisterOrderers(configFile string) error {
 			"--ca-url=" + orderer.CaURL,
 		}
 		
-		if err := run(args...); err != nil {
+		if err := runWithErrorCheck(orderer.User, args...); err != nil {
 			return err
 		}
-		fmt.Printf("Orderer `%s` registrado.\n\n", orderer.User)
+		fmt.Printf("Orderer `%s` processado com sucesso.\n\n", orderer.User)
 	}
 	
 	return nil

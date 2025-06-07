@@ -87,9 +87,10 @@ func main() {
 		{8,  "Create   Wallet", "Criar wallet", func(config string) error { return ca.CreateWallet(config) }},
 		{9,  "Execute  PEM Script", "Extrair certificado PEM", func(config string) error { return scripts.ExecutePemScript(config) }},
 		{10, "Create   Main Channel", "Criar canal principal", func(config string) error { return channels.CreateMainChannel(config) }},
-		{11, "Delete   recursos", "Delete todos os recursos HLF e secret", func(config string) error { return administration.DeleteAllResources() }},
-		{12, "Mostrar  recursos", "Mostra todos recursos para o HLF", func(config string) error { return administration.ShowResources() }},
-		{13, "Change   Config", "Alterar arquivo de configuração", func(config string) error { return changeConfig() }},
+		{11, "Create   follower Channel", "Criar canal para os peeers", func(config string) error { return channels.JoinChannel(config) }},
+		{12, "Delete   recursos", "Delete todos os recursos HLF e secret", func(config string) error { return administration.DeleteAllResources() }},
+		{13, "Mostrar  recursos", "Mostra todos recursos para o HLF", func(config string) error { return administration.ShowResources() }},
+		{14, "Change   Config", "Alterar arquivo de configuração", func(config string) error { return changeConfig() }},
 	}
 
 	scanner := bufio.NewScanner(os.Stdin)
@@ -190,10 +191,10 @@ func executeSingleStep(choice int, steps []Step, configFile string) error {
 func executeAllSteps(steps []Step, configFile string) {
 	fmt.Println("\nExecutando todos os passos em sequência...")
 	fmt.Printf("Usando configuração: %s\n", configFile)
-	fmt.Println("Nota: Os passos de delete (11) e change config (13) serão pulados na execução completa.")
+	fmt.Println("Nota: Os passos de delete (12) e change config (14) serão pulados na execução completa.")
 	
 	for _, step := range steps {
-		if step.ID == 11 || step.ID == 13 {
+		if step.ID == 12 || step.ID == 14 {
 			fmt.Printf("\nPulando passo %d: %s (não executado no modo 'all')\n", step.ID, step.Name)
 			continue
 		}
@@ -219,7 +220,7 @@ func executeAllSteps(steps []Step, configFile string) {
 	}
 	
 	fmt.Println("\nTodos os passos de deployment foram executados!")
-	fmt.Println("Para deletar recursos, execute o passo 11 individualmente.")
+	fmt.Println("Para deletar recursos, execute o passo 12 individualmente.")
 }
 
 func executeStepRange(input string, steps []Step, configFile string) error {

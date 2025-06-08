@@ -69,13 +69,13 @@ type Channel struct {
 
 type JoinChannel struct {
 	Namespace      					string `json:"namespace"`
-	MspID          					string `json:"mspID"`
+	MspID          				[]string `json:"mspID"`
 	FileOutputTls  				[]string `json:"fileOutputTls"`
 	FabricChannelFollower []string `json:"fabricChannelFollower"`
-	PeersToJoin							[]string `json:"peersToJoin"`
-	AnchorPeers						[]string 	`json:"anchorPeers"`
-	OrderNodeHost 				[]string `json:"orderNodeHost"`
-	OrdererNodesList			[]string `json:"ordererNodesList"`
+	PeersToJoin						[][]string `json:"peersToJoin"`
+	AnchorPeers						[][]string 	`json:"anchorPeers"`
+	OrderNodeHost 				[][]string `json:"orderNodeHost"`
+	OrdererNodesList			[][]string `json:"ordererNodesList"`
 }
 
 type Config struct {

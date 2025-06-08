@@ -18,7 +18,7 @@ func readCertificate(filename string) (string, error) {
 	certContent := strings.TrimSpace(string(content))
 
 	lines := strings.Split(certContent, "\n")
-	for i := 1; i < len(lines); i++ {
+	for i := 0; i < len(lines); i++ {
 		lines[i] = "        " + lines[i]
 	}
 	
@@ -40,47 +40,115 @@ func JoinChannel(configFile string) error {
 	}
 
 	for _, joinChannel := range partialConfig.JoinChannel {
-		if !strings.HasPrefix(joinChannel.MspID, "Org") {
-			continue
-		}
-
-		fmt.Printf("Gerando YAML para %s...\n", joinChannel.MspID)
-
-		orderersSection := ""
-		for i, ordererNode := range joinChannel.OrdererNodesList {
-			certPath := fmt.Sprintf("/tmp/%s-cert.pem", ordererNode)
-			cert, err := readCertificate(certPath)
-			if err != nil {
-				return fmt.Errorf("erro ao ler certificado %s: %v", certPath, err)
+		// Itera sobre cada MspID no array
+		for mspIndex, mspID := range joinChannel.MspID {
+			if !strings.HasPrefix(mspID, "Org") {
+				continue
 			}
 
-			orderersSection += fmt.Sprintf(`    - certificate: |
+			fmt.Printf("Gerando YAML para %s...\n", mspID)
+
+			// Seleciona o secretKey correto baseado no mspIndex
+			var secretKey string
+			if mspIndex < len(joinChannel.FileOutputTls) {
+				secretKey = joinChannel.FileOutputTls[mspIndex]
+			} else {
+				secretKey = joinChannel.FileOutputTls[0]
+			}
+
+			// Seleciona os anchor peers desta organização (mspIndex)
+			var orgAnchorPeers []string
+			if mspIndex < len(joinChannel.AnchorPeers) {
+				orgAnchorPeers = joinChannel.AnchorPeers[mspIndex]
+			} else if len(joinChannel.AnchorPeers) > 0 {
+				orgAnchorPeers = joinChannel.AnchorPeers[0]
+			}
+
+			// Monta a seção dos anchor peers
+			anchorPeersSection := ""
+			for i, peer := range orgAnchorPeers {
+				anchorPeersSection += fmt.Sprintf(`    - host: %s
+      port: 443`, peer)
+				if i < len(orgAnchorPeers)-1 {
+					anchorPeersSection += "\n"
+				}
+			}
+
+			// Seleciona os peers to join desta organização (mspIndex)
+			var orgPeersToJoin []string
+			if mspIndex < len(joinChannel.PeersToJoin) {
+				orgPeersToJoin = joinChannel.PeersToJoin[mspIndex]
+			} else if len(joinChannel.PeersToJoin) > 0 {
+				orgPeersToJoin = joinChannel.PeersToJoin[0]
+			}
+
+			// Seleciona os orderer hosts desta organização (mspIndex)
+			var orgOrdererHosts []string
+			if mspIndex < len(joinChannel.OrderNodeHost) {
+				orgOrdererHosts = joinChannel.OrderNodeHost[mspIndex]
+			} else if len(joinChannel.OrderNodeHost) > 0 && len(joinChannel.OrderNodeHost[0]) > 0 {
+				orgOrdererHosts = joinChannel.OrderNodeHost[0]
+			}
+
+			// Seleciona os orderer nodes desta organização (mspIndex)
+			var orgOrdererNodes []string
+			if mspIndex < len(joinChannel.OrdererNodesList) {
+				orgOrdererNodes = joinChannel.OrdererNodesList[mspIndex]
+			} else if len(joinChannel.OrdererNodesList) > 0 && len(joinChannel.OrdererNodesList[0]) > 0 {
+				orgOrdererNodes = joinChannel.OrdererNodesList[0]
+			}
+
+			orderersSection := ""
+			for i, ordererNode := range orgOrdererNodes {
+				certPath := fmt.Sprintf("/tmp/%s-cert.pem", ordererNode)
+				cert, err := readCertificate(certPath)
+				if err != nil {
+					return fmt.Errorf("erro ao ler certificado %s: %v", certPath, err)
+				}
+
+				var ordererURL string
+				if i < len(orgOrdererHosts) {
+					ordererURL = orgOrdererHosts[i]
+				} else if len(orgOrdererHosts) > 0 {
+					ordererURL = orgOrdererHosts[0]
+				} else {
+					ordererURL = "grpcs://ord-node1.default:7050" // fallback
+				}
+
+				orderersSection += fmt.Sprintf(`    - certificate: |
 %s
-      url: %s`, cert, joinChannel.OrderNodeHost[i])
+      url: %s`, cert, ordererURL)
 
-			if i < len(joinChannel.OrdererNodesList)-1 {
-				orderersSection += "\n"
+				if i < len(orgOrdererNodes)-1 {
+					orderersSection += "\n"
+				}
 			}
-		}
 
-		peersToJoinSection := ""
-		for i, peer := range joinChannel.PeersToJoin {
-			peersToJoinSection += fmt.Sprintf(`    - name: %s
+			peersToJoinSection := ""
+			for i, peer := range orgPeersToJoin {
+				peersToJoinSection += fmt.Sprintf(`    - name: %s
       namespace: %s`, peer, joinChannel.Namespace)
 
-			if i < len(joinChannel.PeersToJoin)-1 {
-				peersToJoinSection += "\n"
+				if i < len(orgPeersToJoin)-1 {
+					peersToJoinSection += "\n"
+				}
 			}
-		}
 
-		yaml := fmt.Sprintf(`apiVersion: hlf.kungfusoftware.es/v1alpha1
+			// Usa o mspIndex para selecionar o nome do canal
+			var channelName string
+			if mspIndex < len(joinChannel.FabricChannelFollower) {
+				channelName = joinChannel.FabricChannelFollower[mspIndex]
+			} else {
+				channelName = fmt.Sprintf("%s-%s", joinChannel.FabricChannelFollower[0], strings.ToLower(mspID))
+			}
+
+			yaml := fmt.Sprintf(`apiVersion: hlf.kungfusoftware.es/v1alpha1
 kind: FabricFollowerChannel
 metadata:
   name: %s
 spec:
   anchorPeers:
-    - host: %s
-      port: 443
+%s
   hlfIdentity:
     secretKey: %s
     secretName: wallet
@@ -92,25 +160,28 @@ spec:
 %s
   peersToJoin:
 %s`,
-			joinChannel.FabricChannelFollower[0],
-			joinChannel.AnchorPeers[0],          
-			joinChannel.FileOutputTls[0],        
-			joinChannel.Namespace,                
-			joinChannel.MspID,                   
-			orderersSection,                     
-			peersToJoinSection,                  
+				channelName,
+				anchorPeersSection,          
+				secretKey,        
+				joinChannel.Namespace,                
+				mspID,                   
+				orderersSection,                     
+				peersToJoinSection,                  
+			)
 
-		yamlFilename := fmt.Sprintf("fabric-follower-channel-%s.yaml", joinChannel.FabricChannelFollower[0])
-		if err := saveYAMLToFile(yaml, yamlFilename); err != nil {
-			return fmt.Errorf("erro ao salvar YAML %s: %v", yamlFilename, err)
+			yamlFilename := fmt.Sprintf("fabric-follower-channel-%s.yaml", channelName)
+			if err := saveYAMLToFile(yaml, yamlFilename); err != nil {
+				return fmt.Errorf("erro ao salvar YAML %s: %v", yamlFilename, err)
+			}
+
+			fmt.Printf("Aplicando FabricFollowerChannel %s no cluster...\n", channelName)
+			if err := applyYAML(yaml); err != nil {
+				return fmt.Errorf("erro ao aplicar YAML para %s: %v", mspID, err)
+			}
+
+			fmt.Printf("FabricFollowerChannel %s criado com sucesso!\n", channelName)
+			fmt.Printf("YAML salvo em: %s\n\n", yamlFilename)
 		}
-
-		if err := applyYAML(yaml); err != nil {
-			return fmt.Errorf("erro ao aplicar YAML para %s: %v", joinChannel.MspID, err)
-		}
-
-		fmt.Printf("FabricFollowerChannel %s criado com sucesso!\n", joinChannel.FabricChannelFollower[0])
-		fmt.Printf("YAML salvo em: %s\n\n", yamlFilename)
 	}
 
 	return nil
@@ -133,12 +204,13 @@ func saveYAMLToFile(yamlContent, filename string) error {
 }
 
 func applyYAML(yamlContent string) error {
+	fmt.Printf("Executando: kubectl apply -f -\n")
+	
 	cmd := exec.Command("kubectl", "apply", "-f", "-")
 	cmd.Stdin = strings.NewReader(yamlContent)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	
-	fmt.Printf("Executando: kubectl apply -f -\n")
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("erro ao executar kubectl apply: %v", err)
 	}

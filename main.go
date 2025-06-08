@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 	"hlf/cmd/ca"  
 	"hlf/cmd/node"
 	"hlf/cmd/channels"
@@ -87,9 +88,10 @@ func main() {
 		{8,  "Create   Wallet", "Criar wallet", func(config string) error { return ca.CreateWallet(config) }},
 		{9,  "Execute  PEM Script", "Extrair certificado PEM", func(config string) error { return scripts.ExecutePemScript(config) }},
 		{10, "Create   Main Channel", "Criar canal principal", func(config string) error { return channels.CreateMainChannel(config) }},
-		{11, "Delete   recursos", "Delete todos os recursos HLF e secret", func(config string) error { return administration.DeleteAllResources() }},
-		{12, "Mostrar  recursos", "Mostra todos recursos para o HLF", func(config string) error { return administration.ShowResources() }},
-		{13, "Change   Config", "Alterar arquivo de configuração", func(config string) error { return changeConfig() }},
+		{11, "Create   Follower Channel", "Criar canal para os peers", func(config string) error { return channels.JoinChannel(config) }},
+		{12, "Delete   Components", "Delete todos os Components HLF e secret", func(config string) error { return administration.DeleteAllResources() }},
+		{13, "Mostrar  Components", "Mostra todos Components para o HLF", func(config string) error { return administration.ShowResources() }},
+		{14, "Change   Config", "Alterar arquivo de configuração", func(config string) error { return changeConfig() }},
 	}
 
 	scanner := bufio.NewScanner(os.Stdin)
@@ -135,7 +137,7 @@ func main() {
 			continue
 		}
 		
-		if choice == 13 {
+		if choice == 14 {
 			configFile = selectConfigFile()
 			continue
 		}
@@ -147,7 +149,7 @@ func main() {
 }
 
 func changeConfig() error {
-	fmt.Println("Para alterar a configuração, escolha a opção 13 no menu.")
+	fmt.Println("Para alterar a configuração, escolha a opção 14 no menu.")
 	return nil
 }
 
@@ -158,7 +160,7 @@ func displayMenu(steps []Step, currentConfig string) {
 	fmt.Println(strings.Repeat("=", 60))
 	
 	for _, step := range steps {
-		fmt.Printf("%2d. %-20s - %s\n", step.ID, step.Name, step.Description)
+		fmt.Printf("%2d. %-25s - %s\n", step.ID, step.Name, step.Description)
 	}
 	
 	fmt.Println(strings.Repeat("-", 60))
@@ -190,10 +192,10 @@ func executeSingleStep(choice int, steps []Step, configFile string) error {
 func executeAllSteps(steps []Step, configFile string) {
 	fmt.Println("\nExecutando todos os passos em sequência...")
 	fmt.Printf("Usando configuração: %s\n", configFile)
-	fmt.Println("Nota: Os passos de delete (11) e change config (13) serão pulados na execução completa.")
+	fmt.Println("Nota: Os passos de delete (12) e change config (14) serão pulados na execução completa.")
 	
 	for _, step := range steps {
-		if step.ID == 11 || step.ID == 13 {
+		if step.ID == 12 || step.ID == 14 {
 			fmt.Printf("\nPulando passo %d: %s (não executado no modo 'all')\n", step.ID, step.Name)
 			continue
 		}
@@ -216,10 +218,15 @@ func executeAllSteps(steps []Step, configFile string) {
 		}
 		
 		fmt.Printf("Passo %d concluído: %s\n", step.ID, step.Name)
+
+		if step.ID != 11 {
+			fmt.Println("Aguardando... ")
+			time.Sleep(20 * time.Second)
+		}
 	}
 	
 	fmt.Println("\nTodos os passos de deployment foram executados!")
-	fmt.Println("Para deletar recursos, execute o passo 11 individualmente.")
+	fmt.Println("Para deletar recursos, execute o passo 12 individualmente.")
 }
 
 func executeStepRange(input string, steps []Step, configFile string) error {
@@ -254,6 +261,11 @@ func executeStepRange(input string, steps []Step, configFile string) error {
 		}
 		
 		fmt.Printf("Passo %d concluído: %s\n", step.ID, step.Name)
+
+		if i < end-1 {
+			fmt.Println("Aguardando... ")
+			time.Sleep(20 * time.Second)
+		}
 	}
 	
 	return nil
@@ -279,7 +291,7 @@ func executeMultipleSteps(input string, steps []Step, configFile string) error {
 	fmt.Printf("\nExecutando passos selecionados: %v...\n", selectedSteps)
 	fmt.Printf("Usando configuração: %s\n", configFile)
 	
-	for _, stepNum := range selectedSteps {
+	for i, stepNum := range selectedSteps {
 		step := steps[stepNum-1]
 		fmt.Printf("\nExecutando passo %d: %s...\n", step.ID, step.Name)
 		
@@ -288,6 +300,11 @@ func executeMultipleSteps(input string, steps []Step, configFile string) error {
 		}
 		
 		fmt.Printf("Passo %d concluído: %s\n", step.ID, step.Name)
+
+		if i < len(selectedSteps)-1 {
+			fmt.Println("Aguardando... ")
+			time.Sleep(20 * time.Second)
+		}
 	}
 	
 	return nil

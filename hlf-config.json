@@ -96,5 +96,17 @@
       "fileOutput": "org1msp.yaml",
       "fileOutputTls": "org1msp-tlsca.yaml"
     }
+  ],
+  "joinChannel": [
+    {
+      "namespace": "default",
+      "mspID": ["Org1MSP"],
+      "fileOutputTls": ["org1msp.yaml"],
+      "fabricChannelFollower": ["demo-org1msp"],
+      "peersToJoin": [["org1-peer0"]],
+      "anchorPeers": [["peer0-org1.localho.st"]],
+      "orderNodeHost": [["grpcs://ord-node1.default:7050"]],
+      "ordererNodesList": [["ord-node1"]]
+    }
   ]
 }

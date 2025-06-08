@@ -50,21 +50,32 @@ type Orderer struct {
 }
 
 type Channel struct {
-	Name           string `json:"name"`
-	UserAdmin      string `json:"userAdmin"`
-	Secretadmin    string `json:"secretadmin"`
-	UserType       string `json:"userType"`
-	EnrollID       string `json:"enrollID"`
-	EnrollPW       string `json:"enrollPW"`
-	MspID          string `json:"mspID"`
-	Namespace      string `json:"namespace"`
-	CaNameTls      string `json:"caNameTls"`
-	CaName         string `json:"caName"`
-	FileOutput     string `json:"fileOutput"`
-	FileOutputTls  string `json:"fileOutputTls"`
-	OrderNodeHost		string `json:"orderNodeHost"`
-	OrdererNodeEndpoint []string `json:"ordererNodeEndpoint"`
-	OrdererNodesList		[]string `json:"ordererNodesList"`
+	Name           					string `json:"name"`
+	UserAdmin      					string `json:"userAdmin"`
+	Secretadmin    					string `json:"secretadmin"`
+	UserType       					string `json:"userType"`
+	EnrollID       					string `json:"enrollID"`
+	EnrollPW       					string `json:"enrollPW"`
+	MspID          					string `json:"mspID"`
+	Namespace      					string `json:"namespace"`
+	CaNameTls      					string `json:"caNameTls"`
+	CaName         					string `json:"caName"`
+	FileOutput     					string `json:"fileOutput"`
+	FileOutputTls  					string `json:"fileOutputTls"`
+	OrderNodeHost						string `json:"orderNodeHost"`
+	OrdererNodeEndpoint 	[]string `json:"ordererNodeEndpoint"`
+	OrdererNodesList			[]string `json:"ordererNodesList"`
+}
+
+type JoinChannel struct {
+	Namespace      					string `json:"namespace"`
+	MspID          				[]string `json:"mspID"`
+	FileOutputTls  				[]string `json:"fileOutputTls"`
+	FabricChannelFollower []string `json:"fabricChannelFollower"`
+	PeersToJoin						[][]string `json:"peersToJoin"`
+	AnchorPeers						[][]string 	`json:"anchorPeers"`
+	OrderNodeHost 				[][]string `json:"orderNodeHost"`
+	OrdererNodesList			[][]string `json:"ordererNodesList"`
 }
 
 type Config struct {

@@ -14,7 +14,33 @@ The objective is automation HLF deployment and save a hlf infrastructure status,
   + option-2: 4 orderers nodes, 1 peer node and 1 CA
   + option-3: 1 orderer node, 4 peers nodes and 1 CA
 * Step-3: Choice"all" to create HLF of way automatic
-* Step-4: Choice "12" for show resourcers, wait they are running status
+* Step-4: Choice "13" for show resourcers, wait they are running status
+* Step-5: Query for test
+  + Query for default and four orderes templates 
+    ```
+    kubectl hlf chaincode invoke --config=org1.yaml \
+      --user=admin --peer=org1-peer1.default \
+      --chaincode=asset --channel=demo \
+      --fcn=initLedger -a '[]'
+
+    kubectl hlf chaincode query --config=org1.yaml \
+      --user=admin --peer=org1-peer1.default \
+      --chaincode=asset --channel=demo \
+      --fcn=GetAllAssets -a '[]'
+    ```
+
+  + Query for four peers template
+    ```
+    kubectl hlf chaincode invoke --config=org1.yaml \
+        --user=admin --peer=org1-peer1.default \
+        --chaincode=asset --channel=demo \
+        --fcn=initLedger -a '[]'
+
+    kubectl hlf chaincode query --config=org1.yaml \
+        --user=admin --peer=org1-peer1.default \
+        --chaincode=asset --channel=demo \
+        --fcn=GetAllAssets -a '[]'
+    ```
 
 # HLF Auto - Interface
 
@@ -63,9 +89,12 @@ Usando: templates/4-peers.json
 | 8 | **Create Wallet** | Criar wallet |
 | 9 | **Execute PEM Script** | Extrair certificado PEM |
 | 10 | **Create Main Channel** | Criar canal principal |
-| 11 | **Delete recursos** | Deletar todos os recursos HLF e secrets |
-| 12 | **Mostrar recursos** | Mostrar todos recursos para o HLF |
-| 13 | **Change Config** | Alterar arquivo de configuração |
+| 11 | **Create   Follower Channel** | Criar canal para os peers |
+| 12 | **Delete   Components** | Delete todos os Components HLF e secret |
+| 13 | **Mostrar  Components** | Mostra todos Components para o HLF |
+| 14 | **Change   Config** | Alterar arquivo de configuração |
+| 15 | **Deploy   Chaincode** | Fazer deploy do chaincode |
+
 
 ### Opções Especiais
 
@@ -75,35 +104,3 @@ Usando: templates/4-peers.json
 | `1-5` | Executar passos de 1 a 5 |
 | `1,3,5` | Executar passos específicos (1, 3 e 5) |
 | `q` | Sair da aplicação |
-
-
-
-# Query for test
-* Query for default and four orderes templates 
-```
-kubectl hlf chaincode invoke --config=org1.yaml \
-   --user=admin --peer=org1-peer0.default \
-   --chaincode=asset --channel=demo \
-   --fcn=initLedger -a '[]'
-```
-
-```
-kubectl hlf chaincode query --config=org1.yaml \
-   --user=admin --peer=org1-peer0.default \
-   --chaincode=asset --channel=demo \
-   --fcn=GetAllAssets -a '[]'
-```
-
-* Query for four peers template
-
-```
-kubectl hlf chaincode invoke --config=org1.yaml \
-    --user=admin --peer=org1-peer1.default \
-    --chaincode=asset --channel=demo \
-    --fcn=initLedger -a '[]'
-
-kubectl hlf chaincode query --config=org1.yaml \
-    --user=admin --peer=org1-peer1.default \
-    --chaincode=asset --channel=demo \
-    --fcn=GetAllAssets -a '[]'
-```

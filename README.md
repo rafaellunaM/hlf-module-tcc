@@ -75,3 +75,35 @@ Usando: templates/4-peers.json
 | `1-5` | Executar passos de 1 a 5 |
 | `1,3,5` | Executar passos específicos (1, 3 e 5) |
 | `q` | Sair da aplicação |
+
+
+
+# Query for test
+* Query for default and four orderes templates 
+```
+kubectl hlf chaincode invoke --config=org1.yaml \
+   --user=admin --peer=org1-peer0.default \
+   --chaincode=asset --channel=demo \
+   --fcn=initLedger -a '[]'
+```
+
+```
+kubectl hlf chaincode query --config=org1.yaml \
+   --user=admin --peer=org1-peer0.default \
+   --chaincode=asset --channel=demo \
+   --fcn=GetAllAssets -a '[]'
+```
+
+* Query for four peers template
+
+```
+kubectl hlf chaincode invoke --config=org1.yaml \
+    --user=admin --peer=org1-peer1.default \
+    --chaincode=asset --channel=demo \
+    --fcn=initLedger -a '[]'
+
+kubectl hlf chaincode query --config=org1.yaml \
+    --user=admin --peer=org1-peer1.default \
+    --chaincode=asset --channel=demo \
+    --fcn=GetAllAssets -a '[]'
+```

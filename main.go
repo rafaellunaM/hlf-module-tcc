@@ -12,6 +12,7 @@ import (
 	"hlf/cmd/channels"
 	"hlf/cmd/scripts"
 	"hlf/cmd/administration"
+	"hlf/cmd/chaincode"
 )
 
 type Step struct {
@@ -92,6 +93,7 @@ func main() {
 		{12, "Delete   Components", "Delete todos os Components HLF e secret", func(config string) error { return administration.DeleteAllResources() }},
 		{13, "Mostrar  Components", "Mostra todos Components para o HLF", func(config string) error { return administration.ShowResources() }},
 		{14, "Change   Config", "Alterar arquivo de configuração", func(config string) error { return changeConfig() }},
+		{15, "Deploy 	 Chaincode", "Fazer deploy do chaincode", func(config string) error { return chaincode.DeployChaincode(config) }},
 	}
 
 	scanner := bufio.NewScanner(os.Stdin)

@@ -22,7 +22,7 @@
       "user": "peer",
       "secret": "peerpw",
       "userType": "peer",
-      "mspID": "Org1MSP"
+      "mspID": "Org2MSP"
     },
     {
       "capacity": "1Gi",

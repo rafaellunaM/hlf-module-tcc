@@ -41,7 +41,7 @@ export PACKAGE_ID=$(kubectl hlf chaincode calculatepackageid --path=chaincode.tg
 echo "Instalando chaincode..."
 
 kubectl hlf chaincode install --path=./chaincode.tgz \
-    --config=org1.yaml --language=golang --label=$CHAINCODE_LABEL --user=admin --peer=org1-peer0.default
+    --config=org1.yaml --language=golang --label=$CHAINCODE_LABEL --user=admin --peer=org1-peer1.default
 
 kubectl hlf externalchaincode sync --image=kfsoftware/chaincode-external:latest \
     --name=$CHAINCODE_NAME \
@@ -50,12 +50,12 @@ kubectl hlf externalchaincode sync --image=kfsoftware/chaincode-external:latest 
     --tls-required=false \
     --replicas=1
 
-kubectl hlf chaincode queryinstalled --config=org1.yaml --user=admin --peer=org1-peer0.default
+kubectl hlf chaincode queryinstalled --config=org1.yaml --user=admin --peer=org1-peer1.default
 
 export SEQUENCE=1
 export VERSION="1.0"
 
-kubectl hlf chaincode approveformyorg --config=org1.yaml --user=admin --peer=org1-peer0.default \
+kubectl hlf chaincode approveformyorg --config=org1.yaml --user=admin --peer=org1-peer1.default \
     --package-id=$PACKAGE_ID \
     --version "$VERSION" --sequence "$SEQUENCE" --name=asset \
     --policy="OR('Org1MSP.member')" --channel=demo

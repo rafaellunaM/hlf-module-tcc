@@ -32,9 +32,9 @@
       "mspid": "Org1MSP",
       "enrollIPWpeer": "peerpw",
       "capacity": "5Gi",
-      "name": "org1-peer0",
+      "name": "org1-peer1",
       "CAName": "org1-ca",
-      "hosts": "peer0-org1.localho.st",
+      "hosts": "peer1-org1.localho.st",
       "istioPort": "443",
       "user": "peer",
       "enrollId": "enroll",
@@ -157,8 +157,8 @@
       "mspID": ["Org1MSP"],
       "fileOutputTls": ["org1msp.yaml"],
       "fabricChannelFollower": ["demo-org1msp"],
-      "peersToJoin": [["org1-peer0"]],
-      "anchorPeers": [["peer0-org1.localho.st"]],
+      "peersToJoin": [["org1-peer1"]],
+      "anchorPeers": [["peer1-org1.localho.st"]],
       "orderNodeHost": [["grpcs://ord-node1.default:7050", "grpcs://ord-node2.default:7050", "grpcs://ord-node3.default:7050", "grpcs://ord-node4.default:7050"]],
       "ordererNodesList": [["ord-node1", "ord-node2", "ord-node3","ord-node4"]]
     }

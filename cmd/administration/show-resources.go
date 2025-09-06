@@ -14,7 +14,6 @@ func ShowResources() error {
 		command []string
 	}{
 		{"Pods", []string{"kubectl", "get", "pods", "-n", "default"}},
-		{"Secret Wallet", []string{"kubectl", "get", "secrets", "wallet", "-n default"}},
 		{"Fabric CAs", []string{"kubectl", "get", "fabriccas", "--all-namespaces"}},
 		{"Fabric Peers", []string{"kubectl", "get", "fabricpeers", "--all-namespaces"}},
 		{"Fabric Orderers", []string{"kubectl", "get", "fabricorderernodes", "--all-namespaces"}},
